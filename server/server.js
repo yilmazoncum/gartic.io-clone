@@ -1,10 +1,12 @@
-const { Socket } = require('socket.io');
-
 const app = require('express')();
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+    cors: {
+      origin: '*',
+    }
+  });
 
-io.on('connection', (socket)=> {
+io.on('connect', (socket)=> {
     console.log(`${socket.id} has connected`);
 
     socket.on('canvas-data', (data) => {
