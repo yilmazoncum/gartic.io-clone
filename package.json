@@ -4,8 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+<<<<<<< HEAD
     "start": "nodemon ./server/server.js",
     "debug":" DEBUG=socket.io* nodemon ./server/server.js"
+=======
+    "start": "nodemon ./server/server.js"
+>>>>>>> 626d6bd1fa88cb1796a988a548ece9c7b6be95ae
   },
   "repository": {
     "type": "git",
