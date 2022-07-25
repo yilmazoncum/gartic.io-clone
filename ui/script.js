@@ -1,5 +1,6 @@
 var canvas = document.getElementById('my-canvas');
 var colorPicker = document.getElementById('pen-color');
+var clientCount = document.getElementById('client-count');
 
 canvas.width = 0.98 * window.innerWidth;
 canvas.height = 0.9 * window.innerHeight;
@@ -25,6 +26,10 @@ io.on('onDown', (data) => {
     lineActive = !lineActive
     ctx.moveTo(data.x, data.y)
     ctx.beginPath();
+})
+
+io.on('update-client-count', (count) =>{
+    clientCount.innerHTML = count
 })
 
 colorPicker.addEventListener('input', (e) => {
