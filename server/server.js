@@ -15,10 +15,6 @@ io.on('connect', (socket) => {
     connections.push(socket)
     console.log(`${socket.id} has connected`);
 
-   /*  socket.on('canvas-data', (data) => {
-        io.broadcast.emit('canvas-data', data);
-    }) */
-
     socket.on('disconnect', () => {
         connections = connections.filter((cn) => cn.id !== socket.id);
         console.log(`${socket.id} is disconnected`);
