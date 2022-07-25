@@ -1,4 +1,5 @@
 var canvas = document.getElementById('my-canvas');
+var colorPicker = document.getElementById('pen-color');
 
 canvas.width = 0.98 * window.innerWidth;
 canvas.height = 0.9 * window.innerHeight;
@@ -23,6 +24,10 @@ io.on('onDraw', (data) => {
 io.on('onDown', (data) => {
     lineActive = !lineActive
     ctx.moveTo(data.x, data.y)
+})
+
+colorPicker.addEventListener('input', (e) => {
+    console.log(colorPicker.value);
 })
 
 window.onmousemove = (e)=>{
