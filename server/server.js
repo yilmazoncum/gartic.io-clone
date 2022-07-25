@@ -14,10 +14,13 @@ io.on('connect', (socket) => {
     
     connections.push(socket)
     console.log(`${socket.id} has connected`);
+    
+    io.emit('update-client-count', connections.length);
 
     socket.on('disconnect', () => {
         connections = connections.filter((cn) => cn.id !== socket.id);
         console.log(`${socket.id} is disconnected`);
+        io.emit('update-client-count', connections.length);
     })
 
     socket.on('draw', (data) => {
