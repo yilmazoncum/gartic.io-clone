@@ -7,27 +7,28 @@ canvas.height = 0.9 * window.innerHeight;
 var io = io();
  
 let ctx = canvas.getContext('2d');
-let x,y;
+let x,y,penColor;
 let lineActive = false;
 
 canvas.addEventListener('click',(e) => {
     lineActive = !lineActive
     ctx.moveTo(x, y)
+    ctx.beginPath();
     io.emit('down',{x,y})
 })
 
 io.on('onDraw', (data) => {
-    ctx.lineTo(data.x,data.y)
-    ctx.stroke();
+    drawLine(data);
 })
 
 io.on('onDown', (data) => {
     lineActive = !lineActive
     ctx.moveTo(data.x, data.y)
+    ctx.beginPath();
 })
 
 colorPicker.addEventListener('input', (e) => {
-    console.log(colorPicker.value);
+    penColor = colorPicker.value
 })
 
 window.onmousemove = (e)=>{
@@ -35,9 +36,14 @@ window.onmousemove = (e)=>{
     y = e.clientY;
 
     if(lineActive){
-        io.emit("draw",{x,y})
-        ctx.lineTo(x,y)
-        ctx.stroke();
+        io.emit("draw",{x,y,penColor})
+        drawLine({x,y,penColor});
     }
+}
+
+const drawLine = (data) => {
+    ctx.strokeStyle = data.penColor;
+    ctx.lineTo(data.x,data.y)
+    ctx.stroke();
 }
 
