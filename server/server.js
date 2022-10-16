@@ -9,18 +9,21 @@ const io = require('socket.io')(http, {
 app.use('/',express.static('ui'))
 
 var connections = []
+var clientIdArr = [];
 
 io.on('connect', (socket) => {
     
     connections.push(socket)
+    clientIdArr.push(socket.id)
     console.log(`${socket.id} has connected`);
-    
-    io.emit('update-client-count', connections.length);
+ 
+    io.emit('update-client-count',clientIdArr);
 
     socket.on('disconnect', () => {
         connections = connections.filter((cn) => cn.id !== socket.id);
+        clientIdArr = clientIdArr.filter((cn) => cn !== socket.id);
         console.log(`${socket.id} is disconnected`);
-        io.emit('update-client-count', connections.length);
+        io.emit('update-client-count', clientIdArr);
     })
 
     socket.on('draw', (data) => {

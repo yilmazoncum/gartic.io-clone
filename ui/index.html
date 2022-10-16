@@ -7,8 +7,13 @@
     <title>WhiteBoard</title>
   </head>
   <style>
+    .main-div{
+      display: flex;
+    }
     #my-canvas {
       border: 2px solid black;
+      height: 400px;
+      width: 500px;
     }
     #bottom-canvas {
       display: grid;
@@ -27,8 +32,10 @@ align-items: center;
     }
   </style>
   <body>
-    <div>
+    <div class="main-div">
       <canvas id="my-canvas"></canvas>
+      <div id="user-list-div">
+      </div>
     </div>
     <div id="bottom-canvas">
       <div id="color-picker-container" >
