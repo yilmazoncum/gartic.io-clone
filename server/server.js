@@ -18,6 +18,7 @@ app.get('/game', (req, res) => {
 var connections = []
 var clientIdArr = [];
 var connectionsLimit = 100; //default limit
+var questions = ["ev","bilgisayar","dondurma","güneş","şapka"]; //gecici soru db
 
 io.on('connect', (socket) => {
     
@@ -41,10 +42,9 @@ io.on('connect', (socket) => {
             //diğerleri non-leader room'a
             socket.join("non-leader")
         }
-
         socket.username = username;
         console.log(`${socket.username} has connected`);
-        clientIdArr.push({"id":socket.id,"username":socket.username})
+        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
         io.emit('update-client-count',clientIdArr);
     });
 
@@ -74,11 +74,21 @@ io.on('connect', (socket) => {
     socket.on('startGame', () =>{
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
+        
+        io.emit('showQuestion',questions[Math.floor(Math.random() * 5)])
+        
     })
 
     socket.on('leaderChange', async () =>{
         socket.leave("non-leader")
         socket.join("leader")
+    })
+
+    socket.on('guessCorrect', () =>{
+        foundClient = clientIdArr.find(cn => cn.id == socket.id) 
+            foundClient.correctAnswerCount++ 
+            console.log(socket.username + "correct answer " + foundClient.correctAnswerCount);
+            io.emit('update-client-count', clientIdArr);
     })
 })
 

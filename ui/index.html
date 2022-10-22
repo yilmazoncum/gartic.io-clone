@@ -31,7 +31,7 @@ align-items: center;
   </style>
   <body>
     <div id="question-div">
-      <h1 id="question">Araba</h1>
+      <h1 id="question">Default</h1>
     </div>
     <div class="main-div">
       <canvas id="my-canvas"></canvas>
@@ -39,8 +39,8 @@ align-items: center;
       </div>
     </div>
     <div class="answer-div">
-      <form action="">
-        <input type="text" id="answer">
+      <form id="guess-form"action="">
+        <input type="text" id="guess-text-field">
         <input type="submit" value="Submit">
     </div>
     <div id="bottom-canvas">
@@ -65,9 +65,14 @@ align-items: center;
     var userList = document.getElementById('user-list-div');
     var mainDiv = document.querySelector(".main-div");
     var startBtn = document.getElementById('start-btn');
+    var questionField = document.getElementById("question");
+    var guessField = document.getElementById("guess-text-field");
+    var guessForm = document.getElementById("guess-form");
 
 
     var username = localStorage.getItem('username');
+
+    var currentAnswer
 
     canvas.width = 0.6 * window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
@@ -115,6 +120,11 @@ align-items: center;
       startBtn.style.display = "inline"
       io.emit('leaderChange')
     })
+
+    io.on('showQuestion', (q) => {
+      questionField.innerHTML = q
+      currentAnswer = q
+    })
     
     colorPicker.addEventListener('input', (e) => {
         penColor = colorPicker.value
@@ -122,9 +132,20 @@ align-items: center;
 
     startBtn.addEventListener('click', (e) => {
       console.log("startBtn clicked");
+      e.preventDefault()
       startBtn.style.display = "none"
       io.emit("startGame")
     })
+
+    guessForm.addEventListener("submit", (e) => {
+      e.preventDefault();   
+      console.log(guessField.value)
+      guess = guessField.value
+      guessField.value = ""
+      if (guess == currentAnswer) io.emit('guessCorrect', guess)
+      
+
+    });
 
     
     window.onmousemove = (e)=>{
@@ -145,9 +166,8 @@ align-items: center;
     const updateUserList = (clientArr) =>{
         userList.innerHTML = ""
         clientArr.forEach((element) => {
-            console.log(element);
             var paragraph = document.createElement("p");
-            paragraph.textContent = element.username
+            paragraph.textContent = element.username + " -> " + element.correctAnswerCount
             userList.append(paragraph);
         });
     } 
