@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./server/server.js",
-    "debug":" DEBUG=socket.io* nodemon ./server/server.js"
+    "debug":" DEBUG=socket.io* node ./server/server.js"
   },
   "repository": {
     "type": "git",
