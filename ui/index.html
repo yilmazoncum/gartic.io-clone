@@ -15,7 +15,7 @@
     }
     #bottom-canvas {
       display: grid;
-      grid-template-columns: 110px 150px;
+      grid-template-columns: 110px 150px 110px;
       grid-template-rows: 40px;
       grid-column-gap: 10px;
       grid-row-gap: 0px;
@@ -44,6 +44,7 @@ align-items: center;
         <label>Client Count : </label>
         <p id="client-count"> !? </p>
       </div>
+      <button id="start-btn" action=""> Start Game</button>
     </div>
   </body>
 
@@ -55,6 +56,7 @@ align-items: center;
     var clientCount = document.getElementById('client-count');
     var userList = document.getElementById('user-list-div');
     var mainDiv = document.querySelector(".main-div");
+    var startBtn = document.getElementById('start-btn');
 
 
     var username = localStorage.getItem('username');
@@ -92,10 +94,6 @@ align-items: center;
         updateUserList(clientIdArr)
     })
     
-    colorPicker.addEventListener('input', (e) => {
-        penColor = colorPicker.value
-    })
-
     io.on('error',(err) => {
       console.log(mainDiv);
       h = document.createElement('H1')
@@ -103,6 +101,16 @@ align-items: center;
       h.appendChild(t)
       mainDiv.appendChild(h)
     })
+    
+    colorPicker.addEventListener('input', (e) => {
+        penColor = colorPicker.value
+    })
+
+    startBtn.addEventListener('click', (e) => {
+      console.log("startBtn clicked");
+      io.emit("startGame")
+    })
+
     
     window.onmousemove = (e)=>{
         x = e.clientX;
@@ -127,8 +135,9 @@ align-items: center;
             paragraph.textContent = element.username
             userList.append(paragraph);
         });
-        
     } 
+    
+
 
 
 

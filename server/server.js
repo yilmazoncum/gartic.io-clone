@@ -16,7 +16,7 @@ app.get('/game', (req, res) => {
 
 var connections = []
 var clientIdArr = [];
-var connectionsLimit = 2;
+var connectionsLimit = 100; //default limit
 
 io.on('connect', (socket) => {
 
@@ -51,6 +51,12 @@ io.on('connect', (socket) => {
     socket.on('down',(data) =>{
         socket.broadcast.emit('onDown',data)
     } ) 
+
+    socket.on('startGame', () =>{
+        //trigger anındaki oyuncu sayısını limit belirler
+        connectionsLimit = io.engine.clientsCount
+    })
+
 })
 
 http.listen(5000, () => console.log('listening on port 5000'));
