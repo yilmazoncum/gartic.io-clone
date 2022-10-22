@@ -16,8 +16,17 @@ app.get('/game', (req, res) => {
 
 var connections = []
 var clientIdArr = [];
+var connectionsLimit = 2;
 
 io.on('connect', (socket) => {
+
+    if (io.engine.clientsCount > connectionsLimit) {
+        message = 'Game is already started'
+        io.emit('error',message)
+        socket.disconnect()
+        console.log('Disconnected...')
+        return
+      }
     
     connections.push(socket)
     
