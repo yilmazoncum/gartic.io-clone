@@ -44,7 +44,7 @@ align-items: center;
         <label>Client Count : </label>
         <p id="client-count"> !? </p>
       </div>
-      <button id="start-btn" action=""> Start Game</button>
+      <button id="start-btn" style="display:none "> Start Game</button>
     </div>
   </body>
 
@@ -101,6 +101,12 @@ align-items: center;
       h.appendChild(t)
       mainDiv.appendChild(h)
     })
+
+    io.on('leaderChange',() => {
+      console.log("leaderChange Client");
+      startBtn.style.display = "inline"
+      io.emit('leaderChange')
+    })
     
     colorPicker.addEventListener('input', (e) => {
         penColor = colorPicker.value
@@ -108,6 +114,7 @@ align-items: center;
 
     startBtn.addEventListener('click', (e) => {
       console.log("startBtn clicked");
+      startBtn.style.display = "none"
       io.emit("startGame")
     })
 
