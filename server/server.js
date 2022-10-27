@@ -33,6 +33,14 @@ io.on('connect', (socket) => {
         return
       }
     
+    if (io.engine.clientsCount > connectionsLimit) {
+        message = 'Game is already started'
+        io.emit('error',message)
+        socket.disconnect()
+        console.log('Disconnected...')
+        return
+      }
+    
     connections.push(socket)
     
     socket.on('add username', (username) => {
@@ -45,9 +53,18 @@ io.on('connect', (socket) => {
             //diğerleri non-leader room'a
             socket.join("non-leader")
         }
+        if (io.engine.clientsCount == 1 ) {
+            //ilk bağlanan kişi leader room'a
+            socket.join("leader")
+            io.emit('leaderChange')
+        }
+        else {
+            //diğerleri non-leader room'a
+            socket.join("non-leader")
+        }
         socket.username = username;
         console.log(`${socket.username} has connected`);
-        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
+        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 ,"correctAnswerCount":0 })
         io.emit('update-client-count',clientIdArr);
     });
 
