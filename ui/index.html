@@ -15,7 +15,7 @@
     }
     #bottom-canvas {
       display: grid;
-      grid-template-columns: 110px 150px;
+      grid-template-columns: 110px 150px 110px;
       grid-template-rows: 40px;
       grid-column-gap: 10px;
       grid-row-gap: 0px;
@@ -30,10 +30,18 @@ align-items: center;
     }
   </style>
   <body>
+    <div id="question-div">
+      <h1 id="question">Default</h1>
+    </div>
     <div class="main-div">
       <canvas id="my-canvas"></canvas>
       <div id="user-list-div">
       </div>
+    </div>
+    <div class="answer-div">
+      <form id="guess-form"action="">
+        <input type="text" id="guess-text-field">
+        <input type="submit" value="Submit">
     </div>
     <div id="bottom-canvas">
       <div id="color-picker-container" >
@@ -42,8 +50,16 @@ align-items: center;
       </div>
       <div id="client-count-container">
         <label>Client Count : </label>
-        <p id="client-count"> 7 </p>
+        <p id="client-count"> !? </p>
       </div>
+      <div id="round-time-container">
+        <label>Remaining Time: </label>
+        <p id="round-time-left">30</p>
+      </div>
+    </div>
+    <div id="start-button-container">
+      <button id="start">Start</button>
+      <button id="start-btn" style="display:none "> Start Game</button>
     </div>
   </body>
 
@@ -54,13 +70,24 @@ align-items: center;
     var colorPicker = document.getElementById('pen-color');
     var clientCount = document.getElementById('client-count');
     var userList = document.getElementById('user-list-div');
+    var startButton = document.getElementById('start');//button to start the round
+    var remainingTime = document.getElementById('round-time-left');
+    var mainDiv = document.querySelector(".main-div");
+    var startBtn = document.getElementById('start-btn');
+    var questionField = document.getElementById("question");
+    var guessField = document.getElementById("guess-text-field");
+    var guessForm = document.getElementById("guess-form");
+
 
     var username = localStorage.getItem('username');
+
+    var currentAnswer
 
     canvas.width = 0.6 * window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
 
     var io = io();
+    var drawer = false;
 
     io.emit('add username',username);
 
@@ -69,10 +96,32 @@ align-items: center;
     let lineActive = false;
 
     canvas.addEventListener('click',(e) => {
-        lineActive = !lineActive
-        ctx.moveTo(x, y)
-        ctx.beginPath();
-        io.emit('down',{x,y})
+        if(drawer){
+          lineActive = !lineActive
+          ctx.moveTo(x, y)
+          ctx.beginPath();
+          io.emit('down',{x,y})
+        }
+    })
+
+    //start the round
+    startButton.addEventListener('click',(e) => {
+      io.emit('start')
+      io.emit('startGame')
+    })
+
+    io.on('change-remaining-time', (data) => {
+      remainingTime.textContent = data;
+    })
+
+    io.on('drawer', () => {
+      if(drawer == false){
+        drawer = true;
+      }
+      else{
+        drawer = false;
+      }
+      console.log(drawer);
     })
 
     io.on('onDraw', (data) => {
@@ -90,9 +139,46 @@ align-items: center;
         updateUserList(clientIdArr)
     })
     
+    io.on('error',(err) => {
+      console.log(mainDiv);
+      h = document.createElement('H1')
+      t = document.createTextNode(err);
+      h.appendChild(t)
+      mainDiv.appendChild(h)
+    })
+
+    io.on('leaderChange',() => {
+      console.log("leaderChange Client");
+      startBtn.style.display = "inline"
+      io.emit('leaderChange')
+    })
+
+    io.on('showQuestion', (q) => {
+      questionField.innerHTML = q
+      currentAnswer = q
+    })
+    
     colorPicker.addEventListener('input', (e) => {
         penColor = colorPicker.value
     })
+
+    startBtn.addEventListener('click', (e) => {
+      console.log("startBtn clicked");
+      e.preventDefault()
+      startBtn.style.display = "none"
+      io.emit("startGame")
+    })
+
+    guessForm.addEventListener("submit", (e) => {
+      e.preventDefault();   
+      console.log(guessField.value)
+      guess = guessField.value
+      guessField.value = ""
+      if (guess == currentAnswer) io.emit('guessCorrect', guess)
+      
+
+    });
+
     
     window.onmousemove = (e)=>{
         x = e.clientX;
@@ -112,13 +198,13 @@ align-items: center;
     const updateUserList = (clientArr) =>{
         userList.innerHTML = ""
         clientArr.forEach((element) => {
-            console.log(element);
             var paragraph = document.createElement("p");
-            paragraph.textContent = element.username
+            paragraph.textContent = element.username + " -> " + element.correctAnswerCount
             userList.append(paragraph);
         });
-        
     } 
+    
+
 
 
 
