@@ -15,12 +15,23 @@ app.get('/game', (req, res) => {
     res.sendFile(process.cwd()+ '/ui/index.html');
   });
 
-var connections = []
+var connections = [];
 var clientIdArr = [];
+var clients =[];
+var round = 0;
+var drawerID = null;
 var connectionsLimit = 100; //default limit
 var questions = ["ev","bilgisayar","dondurma","güneş","şapka"]; //gecici soru db
 
 io.on('connect', (socket) => {
+    
+    if (io.engine.clientsCount > connectionsLimit) {
+        message = 'Game is already started'
+        io.emit('error',message)
+        socket.disconnect()
+        console.log('Disconnected...')
+        return
+      }
     
     if (io.engine.clientsCount > connectionsLimit) {
         message = 'Game is already started'
@@ -42,10 +53,35 @@ io.on('connect', (socket) => {
             //diğerleri non-leader room'a
             socket.join("non-leader")
         }
+        if (io.engine.clientsCount == 1 ) {
+            //ilk bağlanan kişi leader room'a
+            socket.join("leader")
+            io.emit('leaderChange')
+        }
+        else {
+            //diğerleri non-leader room'a
+            socket.join("non-leader")
+        }
         socket.username = username;
         console.log(`${socket.username} has connected`);
-        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
+        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 ,"correctAnswerCount":0 })
         io.emit('update-client-count',clientIdArr);
+    });
+
+    //start the round and keep track of remaining time
+    socket.on('start-round', () => {
+        var currentDrawer = setDrawer();
+        io.emit('round-begun')
+        if(currentDrawer != -1){
+            var time = 30;
+            var roundTime = setInterval(() => {
+                io.emit('change-remaining-time',time);
+                time -= 1;
+                if(time == 0){
+                    clearInterval(roundTime);
+                }
+            },1000);
+    }
     });
 
     socket.on('disconnect', async () => {
@@ -54,10 +90,10 @@ io.on('connect', (socket) => {
 
         //leader room'un client sayısı 
         const sockets = await io.in("leader").fetchSockets();
-        if(sockets.length == 0){
-            newLeaderId = clientIdArr[0].id
-            io.to(newLeaderId).emit("leaderChange")
-        }
+        // if(sockets.length == 0){
+        //     newLeaderId = clientIdArr[0].id
+        //     io.to(newLeaderId).emit("leaderChange")
+        // }
 
         console.log(`${socket.username} is disconnected`);
         io.emit('update-client-count', clientIdArr);
@@ -75,7 +111,7 @@ io.on('connect', (socket) => {
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
         
-        io.emit('showQuestion',questions[Math.floor(Math.random() * 5)])
+        io.emit('game-begun');
         
     })
 
@@ -91,6 +127,22 @@ io.on('connect', (socket) => {
             io.emit('update-client-count', clientIdArr);
     })
 })
+
+function setDrawer(){
+    console.log(round, connectionsLimit);
+    if(round >= connectionsLimit){
+        return -1;
+    }
+
+    if(drawerID != null){
+        io.to(drawerID).emit('drawer');
+    }
+    drawerID = clientIdArr[round]['id'];
+    io.to(drawerID).emit('drawer');
+    io.to(drawerID).emit('showQuestion',questions[Math.floor(Math.random() * 5)])
+    round += 1;
+    return drawerID;
+}
 
 const GetSocketsInfo = async () => {
     // Util/Debug Func
