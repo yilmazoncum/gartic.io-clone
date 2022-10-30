@@ -69,8 +69,9 @@ io.on('connect', (socket) => {
     });
 
     //start the round and keep track of remaining time
-    socket.on('start', () => {
+    socket.on('start-round', () => {
         var currentDrawer = setDrawer();
+        io.emit('round-begun')
         if(currentDrawer != -1){
             var time = 30;
             var roundTime = setInterval(() => {
@@ -110,7 +111,7 @@ io.on('connect', (socket) => {
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
         
-        io.emit('showQuestion',questions[Math.floor(Math.random() * 5)])
+        io.emit('game-begun');
         
     })
 
@@ -128,6 +129,7 @@ io.on('connect', (socket) => {
 })
 
 function setDrawer(){
+    console.log(round, connectionsLimit);
     if(round >= connectionsLimit){
         return -1;
     }
@@ -137,6 +139,7 @@ function setDrawer(){
     }
     drawerID = clientIdArr[round]['id'];
     io.to(drawerID).emit('drawer');
+    io.to(drawerID).emit('showQuestion',questions[Math.floor(Math.random() * 5)])
     round += 1;
     return drawerID;
 }

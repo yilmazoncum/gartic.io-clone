@@ -31,20 +31,12 @@ align-items: center;
   </style>
   <body>
     <div id="question-div">
-      <h1 id="question">Default</h1>
-    </div>
-    <div id="question-div">
-      <h1 id="question">Default</h1>
+      <h1 id="question" style="display: none">Default</h1>
     </div>
     <div class="main-div">
       <canvas id="my-canvas"></canvas>
       <div id="user-list-div">
       </div>
-    </div>
-    <div class="answer-div">
-      <form id="guess-form"action="">
-        <input type="text" id="guess-text-field">
-        <input type="submit" value="Submit">
     </div>
     <div class="answer-div">
       <form id="guess-form"action="">
@@ -66,8 +58,8 @@ align-items: center;
       </div>
     </div>
     <div id="start-button-container">
-      <button id="start">Start</button>
-      <button id="start-btn" style="display:none "> Start Game</button>
+      <button id="start-round" style="display: none;">Start</button>
+      <button id="start-btn"> Start Game</button>
     </div>
   </body>
 
@@ -78,10 +70,10 @@ align-items: center;
     var colorPicker = document.getElementById('pen-color');
     var clientCount = document.getElementById('client-count');
     var userList = document.getElementById('user-list-div');
-    var startButton = document.getElementById('start');//button to start the round
     var remainingTime = document.getElementById('round-time-left');
     var mainDiv = document.querySelector(".main-div");
     var startBtn = document.getElementById('start-btn');
+    var startRoundBtn = document.getElementById('start-round');//button to start the round
     var questionField = document.getElementById("question");
     var guessField = document.getElementById("guess-text-field");
     var guessForm = document.getElementById("guess-form");
@@ -113,9 +105,12 @@ align-items: center;
     })
 
     //start the round
-    startButton.addEventListener('click',(e) => {
-      io.emit('start')
-      io.emit('startGame')
+    startRoundBtn.addEventListener('click',(e) => {
+      io.emit('start-round')
+    })
+
+    io.on('round-begun', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     })
 
     io.on('change-remaining-time', (data) => {
@@ -128,6 +123,7 @@ align-items: center;
       }
       else{
         drawer = false;
+        questionField.style.display = "none"
       }
       console.log(drawer);
     })
@@ -163,7 +159,13 @@ align-items: center;
 
     io.on('showQuestion', (q) => {
       questionField.innerHTML = q
+      questionField.style.display = "block"
       currentAnswer = q
+    })
+
+    io.on('game-begun',() => {
+      startBtn.style.display = "none";
+      startRoundBtn.style.display = "block";
     })
     
     colorPicker.addEventListener('input', (e) => {
@@ -173,7 +175,6 @@ align-items: center;
     startBtn.addEventListener('click', (e) => {
       console.log("startBtn clicked");
       e.preventDefault()
-      startBtn.style.display = "none"
       io.emit("startGame")
     })
 
