@@ -111,6 +111,7 @@ align-items: center;
 
     io.on('round-begun', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      startRoundBtn.disabled = true;
     })
 
     io.on('change-remaining-time', (data) => {
@@ -118,6 +119,7 @@ align-items: center;
     })
 
     io.on('drawer', () => {
+
       if(drawer == false){
         drawer = true;
       }
@@ -169,6 +171,10 @@ align-items: center;
 
     io.on('setQuestion',(q) => {
       currentAnswer = q
+    })
+
+    io.on('round-end', () =>{
+      startRoundBtn.disabled = false;
     })
     
     colorPicker.addEventListener('input', (e) => {

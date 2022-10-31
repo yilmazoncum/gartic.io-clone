@@ -77,8 +77,9 @@ io.on('connect', (socket) => {
             var roundTime = setInterval(() => {
                 io.emit('change-remaining-time',time);
                 time -= 1;
-                if(time == 0){
+                if(time <= 0){
                     clearInterval(roundTime);
+                    io.emit('round-end')
                 }
             },1000);
     }
