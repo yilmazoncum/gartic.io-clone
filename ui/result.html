@@ -62,12 +62,12 @@
   var winnerName = document.querySelector("#winner-name");
 
   var results = localStorage.getItem('resultsArr');
-
-    winnerName.textContent = results[0]
+  results = JSON.parse(results)
+  winnerName.textContent = results[0].username
 
     for(var i= 1 ; i< results.length ; i++){
         var li = document.createElement("li");
-        li.appendChild(document.createTextNode(results[i]));
+        li.appendChild(document.createTextNode(results[i].username));
         othersList.appendChild(li);
     }
 

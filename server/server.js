@@ -14,9 +14,14 @@ app.get('/', (req, res) => {
 app.get('/game', (req, res) => {
     res.sendFile(process.cwd()+ '/ui/index.html');
   });
+  
+app.get('/results', (req, res) => {
+    res.sendFile(process.cwd()+ '/ui/result.html');
+  });  
 
 var connections = [];
 var clientIdArr = [];
+//clientIdArr -> {"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
 var clients =[];
 var round = 0;
 var drawerID = null;
@@ -64,7 +69,7 @@ io.on('connect', (socket) => {
         }
         socket.username = username;
         console.log(`${socket.username} has connected`);
-        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 ,"correctAnswerCount":0 })
+        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
         io.emit('update-client-count',clientIdArr);
     });
 
@@ -81,7 +86,7 @@ io.on('connect', (socket) => {
                     clearInterval(roundTime);
                     io.emit('round-end')
                 }
-            },1000);
+            },100);
     }
     });
 
@@ -132,6 +137,9 @@ io.on('connect', (socket) => {
 function setDrawer(){
     console.log(round, connectionsLimit);
     if(round >= connectionsLimit){
+        // TODO: start butonuna basınca oyun bitiyo, düzeltilmeli
+        
+        io.emit('game-end', getWinner())
         return -1;
     }
 
@@ -145,6 +153,11 @@ function setDrawer(){
     io.emit('setQuestion',currentQuestion);
     round += 1;
     return drawerID;
+}
+
+function getWinner(){
+    clientIdArr.sort((a,b) => a.correctAnswerCount < b.correctAnswerCount ? 1 : -1)
+    return clientIdArr
 }
 
 const GetSocketsInfo = async () => {

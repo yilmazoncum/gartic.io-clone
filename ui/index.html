@@ -176,6 +176,12 @@ align-items: center;
     io.on('round-end', () =>{
       startRoundBtn.disabled = false;
     })
+
+    io.on('game-end', (results) =>{
+        console.log(results)
+        localStorage.setItem('resultsArr',JSON.stringify(results));
+        window.location.replace("/results")
+    })
     
     colorPicker.addEventListener('input', (e) => {
         penColor = colorPicker.value
