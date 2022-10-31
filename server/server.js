@@ -22,6 +22,7 @@ var round = 0;
 var drawerID = null;
 var connectionsLimit = 100; //default limit
 var questions = ["ev","bilgisayar","dondurma","güneş","şapka"]; //gecici soru db
+var correctAnswerCount = 0;
 
 io.on('connect', (socket) => {
     
@@ -76,9 +77,11 @@ io.on('connect', (socket) => {
             var time = 30;
             var roundTime = setInterval(() => {
                 io.emit('change-remaining-time',time);
+                
                 time -= 1;
-                if(time <= 0){
+                if(time <= 0 || IsAllAnswersCorrect(correctAnswerCount)){
                     clearInterval(roundTime);
+                    correctAnswerCount = 0
                     io.emit('round-end')
                 }
             },1000);
@@ -124,6 +127,7 @@ io.on('connect', (socket) => {
     socket.on('guessCorrect', () =>{
         foundClient = clientIdArr.find(cn => cn.id == socket.id) 
             foundClient.correctAnswerCount++ 
+            correctAnswerCount++
             console.log(socket.username + "correct answer " + foundClient.correctAnswerCount);
             io.emit('update-client-count', clientIdArr);
     })
@@ -147,6 +151,10 @@ function setDrawer(){
     return drawerID;
 }
 
+function IsAllAnswersCorrect(count) {
+    return (io.engine.clientsCount - 1) == count
+}
+
 const GetSocketsInfo = async () => {
     // Util/Debug Func
     const sockets = await io.fetchSockets();
@@ -155,5 +163,7 @@ const GetSocketsInfo = async () => {
         console.log(socket.rooms);
       }
 }
+
+
 
 http.listen(5000, () => console.log('listening on port 5000'));
