@@ -163,7 +163,7 @@ function getWinner(){
     clientIdArr.sort((a,b) => a.correctAnswerCount < b.correctAnswerCount ? 1 : -1)
     return clientIdArr
 }
-
+gir 
 function IsAllAnswersCorrect(count) {
     return (io.engine.clientsCount - 1) == count
 
