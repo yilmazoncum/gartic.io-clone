@@ -119,8 +119,10 @@ align-items: center;
     })
 
     io.on('drawer', () => {
-
+      
       if(drawer == false){
+        guessField.disabled = true
+        guessForm.disabled = true
         drawer = true;
       }
       else{
@@ -175,6 +177,9 @@ align-items: center;
 
     io.on('round-end', () =>{
       startRoundBtn.disabled = false;
+      guessField.disabled = false
+      guessForm.disabled = false
+      remainingTime.textContent = 0;
     })
 
     io.on('game-end', (results) =>{
@@ -199,7 +204,12 @@ align-items: center;
       console.log("currentAnswer : "+ currentAnswer)
       guess = guessField.value
       guessField.value = ""
-      if (guess == currentAnswer) io.emit('guessCorrect', guess)
+      if (guess == currentAnswer) {
+      guessField.disabled = true
+      guessForm.disabled = true
+      io.emit('guessCorrect', guess)
+      }
+      
       
 
     });
