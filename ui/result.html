@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Results</title>
+  </head>
+  <body>
+    <div class="main-div">
+      <div class="winner-div">
+        <h1 id="winner-h1">WINNER</h1>
+        <h2 id="winner-name"></h2>
+      </div>
+
+      <div class="others-div">
+        <ol id="others-ol" start="2">
+          
+        </ol>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  body {
+    background-color: #010409;
+  }
+
+  .main-div {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    text-align: center;
+    list-style-position: inside;
+  }
+  .winner-div {
+    color: whitesmoke;
+    font-size: 12px;
+  }
+  #winner-h1{
+  color: lime;
+  font-size: 128px;
+  }
+  #winner-name{
+  color: whitesmoke;
+  font-size: 36px;
+  }
+  .others-div {
+    color: whitesmoke;
+    font-size: 24px;
+    justify-content: center;
+    margin-top: 20%;
+  }
+
+</style>
+
+<script>
+  var othersList = document.querySelector("#others-ol");
+  var winnerName = document.querySelector("#winner-name");
+
+  var results = localStorage.getItem('resultsArr');
+  results = JSON.parse(results)
+  winnerName.textContent = results[0].username
+
+    for(var i= 1 ; i< results.length ; i++){
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode(results[i].username));
+        othersList.appendChild(li);
+    }
+
+    
+
+</script>

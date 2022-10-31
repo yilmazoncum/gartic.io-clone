@@ -181,6 +181,12 @@ align-items: center;
       guessForm.disabled = false
       remainingTime.textContent = 0;
     })
+
+    io.on('game-end', (results) =>{
+        console.log(results)
+        localStorage.setItem('resultsArr',JSON.stringify(results));
+        window.location.replace("/results")
+    })
     
     colorPicker.addEventListener('input', (e) => {
         penColor = colorPicker.value
