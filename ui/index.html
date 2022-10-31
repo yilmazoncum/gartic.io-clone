@@ -160,12 +160,15 @@ align-items: center;
     io.on('showQuestion', (q) => {
       questionField.innerHTML = q
       questionField.style.display = "block"
-      currentAnswer = q
     })
 
     io.on('game-begun',() => {
       startBtn.style.display = "none";
       startRoundBtn.style.display = "block";
+    })
+
+    io.on('setQuestion',(q) => {
+      currentAnswer = q
     })
     
     colorPicker.addEventListener('input', (e) => {
@@ -180,7 +183,8 @@ align-items: center;
 
     guessForm.addEventListener("submit", (e) => {
       e.preventDefault();   
-      console.log(guessField.value)
+      console.log("guess : " + guessField.value)
+      console.log("currentAnswer : "+ currentAnswer)
       guess = guessField.value
       guessField.value = ""
       if (guess == currentAnswer) io.emit('guessCorrect', guess)

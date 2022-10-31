@@ -139,7 +139,9 @@ function setDrawer(){
     }
     drawerID = clientIdArr[round]['id'];
     io.to(drawerID).emit('drawer');
-    io.to(drawerID).emit('showQuestion',questions[Math.floor(Math.random() * 5)])
+    currentQuestion = questions[Math.floor(Math.random() * 5)]
+    io.to(drawerID).emit('showQuestion',currentQuestion)
+    io.emit('setQuestion',currentQuestion);
     round += 1;
     return drawerID;
 }
