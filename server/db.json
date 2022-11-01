@@ -1,18 +1,1 @@
-{
-    "highscore": {"name" : "default", "score": 99999 },
-    "questions": 
-        [
-            {"id":1, "text": "araba" },
-            {"id":2, "text": "ev" },
-            {"id":3, "text": "bilgisayar" },
-            {"id":4, "text": "dondurma" },
-            {"id":5, "text": "güneş" },
-            {"id":6, "text": "defter" },
-            {"id":7, "text": "kalem" },
-            {"id":8, "text": "balık" },
-            {"id":9, "text": "telefon" },
-            {"id":10, "text": "parfüm" }
-        ]
-    
-  }
-  
+{"highscore":{"name":"öncüm","score":2},"questions":[{"id":1,"text":"araba"},{"id":2,"text":"ev"},{"id":3,"text":"bilgisayar"},{"id":4,"text":"dondurma"},{"id":5,"text":"güneş"},{"id":6,"text":"defter"},{"id":7,"text":"kalem"},{"id":8,"text":"balık"},{"id":9,"text":"telefon"},{"id":10,"text":"parfüm"}]}

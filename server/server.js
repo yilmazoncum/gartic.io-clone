@@ -6,6 +6,8 @@ const io = require('socket.io')(http, {
         origin: '*',
     }
 });
+const db = require('./db.json')
+const fs = require('fs');
 
 app.get('/', (req, res) => {
     res.sendFile(process.cwd()+ '/ui/login.html');
@@ -30,7 +32,6 @@ var questions = ["ev","bilgisayar","dondurma","güneş","şapka"]; //gecici soru
 var correctAnswerCount = 0;
 
 io.on('connect', (socket) => {
-    
     if (io.engine.clientsCount > connectionsLimit) {
         message = 'Game is already started'
         io.emit('error',message)
@@ -161,12 +162,29 @@ function setDrawer(){
 
 function getWinner(){
     clientIdArr.sort((a,b) => a.correctAnswerCount < b.correctAnswerCount ? 1 : -1)
+    if (checkHighscore(clientIdArr[0].correctAnswerCount)) setHighscore(clientIdArr[0])
     return clientIdArr
 }
-gir 
+
 function IsAllAnswersCorrect(count) {
     return (io.engine.clientsCount - 1) == count
 
+}
+
+function setHighscore(user) {
+
+    let doc = fs.readFileSync( process.cwd()+ '/server/db.json' )
+    let docData = JSON.parse(doc);
+
+    docData.highscore.name = user.username
+    docData.highscore.score = user.correctAnswerCount
+
+    let data = JSON.stringify(docData);  
+    fs.writeFileSync(process.cwd()+ '/server/db.json', data);
+}
+
+function checkHighscore(score) {
+    return db.highscore.score < score; 
 }
 
 
