@@ -6,6 +6,8 @@ const io = require('socket.io')(http, {
         origin: '*',
     }
 });
+const db = require('./db.json')
+const fs = require('fs');
 
 app.get('/', (req, res) => {
     res.sendFile(process.cwd()+ '/ui/login.html');
@@ -26,11 +28,11 @@ var clients =[];
 var round = 0;
 var drawerID = null;
 var connectionsLimit = 100; //default limit
-var questions = ["ev","bilgisayar","dondurma","güneş","şapka"]; //gecici soru db
+var questions = []
 var correctAnswerCount = 0;
 
 io.on('connect', (socket) => {
-    
+
     if (io.engine.clientsCount > connectionsLimit) {
         message = 'Game is already started'
         io.emit('error',message)
@@ -89,7 +91,7 @@ io.on('connect', (socket) => {
                     correctAnswerCount = 0
                     io.emit('round-end')
                 }
-            },100);
+            },1000);
     }
     });
 
@@ -119,6 +121,7 @@ io.on('connect', (socket) => {
     socket.on('startGame', () =>{
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
+        getQuestionsFromDb(connectionsLimit) //! kullanıcı sayısı kadar soru alıyo oyun mantığı değişebilir
         
         io.emit('game-begun');
         
@@ -140,6 +143,7 @@ io.on('connect', (socket) => {
 
 function setDrawer(){
     console.log(round, connectionsLimit);
+    console.log("146: " + questions)
     if(round >= connectionsLimit){
         // TODO: start butonuna basınca oyun bitiyo, düzeltilmeli
         
@@ -150,9 +154,13 @@ function setDrawer(){
     if(drawerID != null){
         io.to(drawerID).emit('drawer');
     }
+
     drawerID = clientIdArr[round]['id'];
     io.to(drawerID).emit('drawer');
-    currentQuestion = questions[Math.floor(Math.random() * 5)]
+
+    
+    currentQuestion = questions[round]
+
     io.to(drawerID).emit('showQuestion',currentQuestion)
     io.emit('setQuestion',currentQuestion);
     round += 1;
@@ -161,6 +169,7 @@ function setDrawer(){
 
 function getWinner(){
     clientIdArr.sort((a,b) => a.correctAnswerCount < b.correctAnswerCount ? 1 : -1)
+    if (checkHighscore(clientIdArr[0].correctAnswerCount)) setHighscore(clientIdArr[0])
     return clientIdArr
 }
 
@@ -169,6 +178,34 @@ function IsAllAnswersCorrect(count) {
 
 }
 
+function setHighscore(user) {
+
+    let doc = fs.readFileSync( process.cwd()+ '/server/db.json' )
+    let docData = JSON.parse(doc);
+
+    docData.highscore.name = user.username
+    docData.highscore.score = user.correctAnswerCount
+
+    let data = JSON.stringify(docData);  
+    fs.writeFileSync(process.cwd()+ '/server/db.json', data);
+}
+
+function checkHighscore(score) {
+    return db.highscore.score < score; 
+}
+
+function getQuestionsFromDb(questionCount){
+    for (let i = 0; i < questionCount; i++) {
+        randomNum = randomNumber(10) //! db deki soru sayısı 10
+        questions.push(db.questions[randomNum].text)
+    }
+
+    console.log(questions)
+}
+
+function randomNumber(maxValue) {
+    return Math.floor(Math.random() * maxValue)
+}
 
 const GetSocketsInfo = async () => {
     // Util/Debug Func
