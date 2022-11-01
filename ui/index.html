@@ -38,7 +38,7 @@ align-items: center;
       <div id="user-list-div">
       </div>
     </div>
-    <div class="answer-div">
+    <div class="answer-div" id="answer-container">
       <form id="guess-form"action="">
         <input type="text" id="guess-text-field">
         <input type="submit" value="Submit">
@@ -77,6 +77,7 @@ align-items: center;
     var questionField = document.getElementById("question");
     var guessField = document.getElementById("guess-text-field");
     var guessForm = document.getElementById("guess-form");
+    var answerContainer = document.getElementById("answer-container")
 
 
     var username = localStorage.getItem('username');
@@ -106,6 +107,7 @@ align-items: center;
 
     //start the round
     startRoundBtn.addEventListener('click',(e) => {
+      console.log(answerContainer);
       io.emit('start-round')
     })
 
@@ -123,11 +125,13 @@ align-items: center;
       if(drawer == false){
         guessField.disabled = true
         guessForm.disabled = true
+        answerContainer.style.display = 'none'
         drawer = true;
       }
       else{
         drawer = false;
         questionField.style.display = "none"
+        answerContainer.style.display = 'block'
       }
       console.log(drawer);
     })
