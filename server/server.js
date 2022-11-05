@@ -79,8 +79,8 @@ io.on('connect', (socket) => {
     //start the round and keep track of remaining time
     socket.on('start-round', () => {
         var currentDrawer = setDrawer();
-        io.emit('round-begun')
         if(currentDrawer != -1){
+            io.emit('round-begun')
             var time = 30;
             var roundTime = setInterval(() => {
                 io.emit('change-remaining-time',time);
@@ -150,11 +150,7 @@ function setDrawer(){
         io.emit('game-end', getWinner())
         return -1;
     }
-
-    if(drawerID != null){
-        io.to(drawerID).emit('drawer');
-    }
-
+  
     drawerID = clientIdArr[round]['id'];
     io.to(drawerID).emit('drawer');
 
