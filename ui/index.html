@@ -93,17 +93,38 @@ align-items: center;
     io.emit('add username',username);
 
     let ctx = canvas.getContext('2d');
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     let x,y,penColor;
     let lineActive = false;
+    let isDrawing = false;
 
-    canvas.addEventListener('click',(e) => {
-        if(drawer){
-          lineActive = !lineActive
-          ctx.moveTo(x, y)
-          ctx.beginPath();
-          io.emit('down',{x,y})
-        }
-    })
+    //variables for canvas
+    let lastX = 0;
+    let lastY = 0;
+    let hue = 0;
+    let lineWidth = 50;
+    // ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+
+    // canvas.addEventListener('mousedown',(e) => {
+    //     if(drawer){
+    //       lineActive = !lineActive
+    //       ctx.moveTo(x, y)
+    //       ctx.beginPath();
+    //       io.emit('down',{x,y})
+    //     }
+    // })
+
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mousedown", (event) => {
+      if(drawer){
+        isDrawing = true;
+        [lastX, lastY] = [event.lastX, event.lastY];
+        io.emit('down',{x,y});
+      }
+    });
+    canvas.addEventListener("mouseup", () => isDrawing = false);
+    canvas.addEventListener("mouseout", () => isDrawing = false);
 
     //start the round
     startRoundBtn.addEventListener('click',(e) => {
@@ -184,6 +205,10 @@ align-items: center;
       guessField.disabled = false
       guessForm.disabled = false
       remainingTime.textContent = 0;
+
+      drawer = false;
+      questionField.style.display = "none"
+      answerContainer.style.display = 'block'
     })
 
     io.on('game-end', (results) =>{
@@ -243,6 +268,17 @@ align-items: center;
         });
     } 
     
+    function draw(event){
+      if(!isDrawing) return;
+
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(event.offsetX, event.offsetY);
+      ctx.stroke();
+
+      lastX = event.offsetX
+      lastY = event.offsetY
+}
 
 
 

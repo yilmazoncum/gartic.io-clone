@@ -147,9 +147,9 @@ function setDrawer(){
         return -1;
     }
 
-    if(drawerID != null){
-        io.to(drawerID).emit('drawer');
-    }
+    // if(drawerID != null){
+    //     io.to(drawerID).emit('drawer');
+    // }
     drawerID = clientIdArr[round]['id'];
     io.to(drawerID).emit('drawer');
     currentQuestion = questions[Math.floor(Math.random() * 5)]
