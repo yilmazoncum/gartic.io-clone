@@ -120,7 +120,7 @@ align-items: center;
       if(drawer){
         isDrawing = true;
         [lastX, lastY] = [event.lastX, event.lastY];
-        io.emit('down',{x,y});
+        io.emit('down',{lastX,lastY});
       }
     });
     canvas.addEventListener("mouseup", () => isDrawing = false);
@@ -207,6 +207,8 @@ align-items: center;
       remainingTime.textContent = 0;
 
       drawer = false;
+      lineActive = false;
+      isDrawing = false;
       questionField.style.display = "none"
       answerContainer.style.display = 'block'
     })
@@ -243,16 +245,6 @@ align-items: center;
 
     });
 
-    
-    window.onmousemove = (e)=>{
-        x = e.clientX;
-        y = e.clientY;
-        if(lineActive){
-            io.emit("draw",{x,y,penColor})
-            drawLine({x,y,penColor});
-        }
-    }
-    
     const drawLine = (data) => {
         ctx.strokeStyle = data.penColor;
         ctx.lineTo(data.x,data.y)
@@ -271,10 +263,14 @@ align-items: center;
     function draw(event){
       if(!isDrawing) return;
 
+      x = event.offsetX;
+      y = event.offsetY;
+
       ctx.beginPath();
       ctx.moveTo(lastX, lastY);
       ctx.lineTo(event.offsetX, event.offsetY);
       ctx.stroke();
+      io.emit("draw",{x,y})
 
       lastX = event.offsetX
       lastY = event.offsetY
