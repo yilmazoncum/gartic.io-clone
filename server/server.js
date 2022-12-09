@@ -23,13 +23,15 @@ app.get('/results', (req, res) => {
 
 var connections = [];
 var clientIdArr = [];
-//clientIdArr -> {"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
+//clientIdArr -> {"id":socket.id,"username":socket.username,"correctAnswerCount":0 ,"point":0})
 var clients =[];
 var round = 0;
 var drawerID = null;
 var connectionsLimit = 100; //default limit
 var questions = []
 var correctAnswerCount = 0;
+var time;
+var currentDrawer;
 
 io.on('connect', (socket) => {
 
@@ -72,7 +74,9 @@ io.on('connect', (socket) => {
         }
         socket.username = username;
         console.log(`${socket.username} has connected`);
-        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0 })
+        clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0,"point":0})
+        let highscoreInfoStr = getHighScoreInfo()
+        io.emit('highscore-info',highscoreInfoStr)
         io.emit('update-client-count',clientIdArr);
     });
 
@@ -81,15 +85,22 @@ io.on('connect', (socket) => {
         var currentDrawer = setDrawer();
         if(currentDrawer != -1){
             io.emit('round-begun')
-            var time = 30;
+            time = 30;
             var roundTime = setInterval(() => {
                 io.emit('change-remaining-time',time);
                 
                 time -= 1;
-                if(time <= 0 || IsAllAnswersCorrect(correctAnswerCount)){
+                if(time <= 0){
                     clearInterval(roundTime);
                     correctAnswerCount = 0
-                    io.emit('round-end')
+                    io.emit('round-end',"time")
+                    //overlayda yazdırmak amacıyla hangi nedenle oyunun bittiğini parametre olarak gönderdik
+                }
+                else if (IsAllAnswersCorrect(correctAnswerCount)) {
+                    clearInterval(roundTime);
+                    correctAnswerCount = 0
+                    io.emit('round-end',"correct")
+                    //overlayda yazdırmak amacıyla hangi nedenle oyunun bittiğini parametre olarak gönderdik
                 }
             },1000);
     }
@@ -134,9 +145,11 @@ io.on('connect', (socket) => {
 
     socket.on('guessCorrect', () =>{
         foundClient = clientIdArr.find(cn => cn.id == socket.id) 
+            setPoint(foundClient);
+            setDrawerPoint(currentDrawer);
             foundClient.correctAnswerCount++ 
             correctAnswerCount++
-            console.log(socket.username + "correct answer " + foundClient.correctAnswerCount);
+            console.log(socket.username + "correct answer " + foundClient.point);
             io.emit('update-client-count', clientIdArr);
     })
 })
@@ -152,6 +165,7 @@ function setDrawer(){
     }
   
     drawerID = clientIdArr[round]['id'];
+    currentDrawer = clientIdArr[round];
     io.to(drawerID).emit('drawer');
 
     
@@ -164,8 +178,8 @@ function setDrawer(){
 }
 
 function getWinner(){
-    clientIdArr.sort((a,b) => a.correctAnswerCount < b.correctAnswerCount ? 1 : -1)
-    if (checkHighscore(clientIdArr[0].correctAnswerCount)) setHighscore(clientIdArr[0])
+    clientIdArr.sort((a,b) => a.point < b.point ? 1 : -1)
+    if (checkHighscore(clientIdArr[0].point)) setHighscore(clientIdArr[0])
     return clientIdArr
 }
 
@@ -180,7 +194,7 @@ function setHighscore(user) {
     let docData = JSON.parse(doc);
 
     docData.highscore.name = user.username
-    docData.highscore.score = user.correctAnswerCount
+    docData.highscore.score = user.point
 
     let data = JSON.stringify(docData);  
     fs.writeFileSync(process.cwd()+ '/server/db.json', data);
@@ -210,6 +224,24 @@ const GetSocketsInfo = async () => {
         console.log(socket.id);
         console.log(socket.rooms);
       }
+}
+
+function setPoint(user){
+    if(time >= 25) user.point += 3; //hardcoded :(
+    else if(time >= 20) user.point += 2;
+    else user.point += 1;
+}
+
+function setDrawerPoint(drawerUser){
+    drawerUser.point+=4;
+    console.log("235" + drawerUser);
+}
+
+function getHighScoreInfo(){
+      let doc = fs.readFileSync( process.cwd()+ '/server/db.json' )
+      let docData = JSON.parse(doc);
+      str = "Highscore: " + docData.highscore.name + " -> " + docData.highscore.score
+      return str
 }
 
 

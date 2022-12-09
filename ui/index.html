@@ -9,9 +9,11 @@
   <style>
     .main-div{
       display: flex;
+      z-index:5;
     }
     #my-canvas {
       border: 2px solid black;
+      z-index:5;
     }
     #bottom-canvas {
       display: grid;
@@ -19,17 +21,36 @@
       grid-template-rows: 40px;
       grid-column-gap: 10px;
       grid-row-gap: 0px;
+      z-index:5;
     }
     #color-picker-container{
         display: flex;
-align-items: center;
+        align-items: center;
+        z-index:5;
     }
     #client-count-container {   
         display: flex;
-align-items: center;
+        align-items: center;
+        z-index:5;
+    }
+    #overlayDiv {
+    z-index:99;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    text-align: left;
+    padding-left: 18%;
+    padding-top: 12%;
+    font-size: 40px;
+    display:none;
+    color:black;
     }
   </style>
   <body>
+    <div id="overlayDiv">
+      <h1 id="overlayH1">DENEME</h1>
+      <h3 id="overlayH3">deneme</h3>
+    </div>
     <div id="question-div">
       <h1 id="question" style="display: none">Default</h1>
     </div>
@@ -46,7 +67,7 @@ align-items: center;
     <div id="bottom-canvas">
       <div id="color-picker-container" >
         <label for="color">Color : </label>
-        <input type="color" id="pen-color" value="#f6b73c" />
+        <input type="color" id="pen-color" value="#000000" />
       </div>
       <div id="client-count-container">
         <label>Client Count : </label>
@@ -59,8 +80,9 @@ align-items: center;
     </div>
     <div id="start-button-container">
       <button id="start-round" style="display: none;">Start</button>
-      <button id="start-btn"> Start Game</button>
+      <button id="start-btn"> Lock the Room</button>
     </div>
+    
   </body>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -79,17 +101,20 @@ align-items: center;
     var guessForm = document.getElementById("guess-form");
     var answerContainer = document.getElementById("answer-container")
 
-
     var username = localStorage.getItem('username');
+    
 
     var currentAnswer
+    
 
     canvas.width = 0.6 * window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
 
     var io = io();
-    var drawer = false;
-
+    var isDrawer = false;
+     
+     
+    document.title = username;
     io.emit('add username',username);
 
     let ctx = canvas.getContext('2d');
@@ -117,7 +142,7 @@ align-items: center;
 
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mousedown", (event) => {
-      if(drawer){
+      if(isDrawer){
         isDrawing = true;
         [lastX, lastY] = [event.lastX, event.lastY];
         io.emit('down',{lastX,lastY});
@@ -135,6 +160,9 @@ align-items: center;
     io.on('round-begun', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       startRoundBtn.disabled = true;
+      if(isDrawer == false) {
+      OverlayControl("Tahmin Zamanı !","#9400D3");
+      }
     })
 
     io.on('change-remaining-time', (data) => {
@@ -143,18 +171,20 @@ align-items: center;
 
     io.on('drawer', () => {
       
-      if(drawer == false){
+      if(isDrawer == false){
+        //Drawer olan kişi
+        OverlayControl("Sıra Sende !","#E55132")
         guessField.disabled = true
         guessForm.disabled = true
         answerContainer.style.display = 'none'
-        drawer = true;
+        isDrawer = true;
       }
       else{
-        drawer = false;
+        isDrawer = false;
         questionField.style.display = "none"
         answerContainer.style.display = 'block'
       }
-      console.log(drawer);
+      console.log(isDrawer);
     })
 
     io.on('onDraw', (data) => {
@@ -194,29 +224,46 @@ align-items: center;
     io.on('game-begun',() => {
       startBtn.style.display = "none";
       startRoundBtn.style.display = "block";
+      OverlayControl("Oda Hazır Oyun Başlayacak !","#327DE5");      
+      
     })
 
     io.on('setQuestion',(q) => {
       currentAnswer = q
     })
 
-    io.on('round-end', () =>{
+    io.on('round-end', (reason) =>{
+      
       startRoundBtn.disabled = false;
       guessField.disabled = false
       guessForm.disabled = false
       remainingTime.textContent = 0;
 
-      drawer = false;
+      isDrawer = false;
       lineActive = false;
       isDrawing = false;
       questionField.style.display = "none"
       answerContainer.style.display = 'block'
+
+      if(reason == "time"){
+      OverlayControl("Süre Bitti !","#E5D332")
+      }
+      else if(reason == "correct"){
+      OverlayControl("Herkes doğru cevap verdi","#48E532")
+      }
+      guessField.style.backgroundColor = "white";
+
     })
 
     io.on('game-end', (results) =>{
         console.log(results)
         localStorage.setItem('resultsArr',JSON.stringify(results));
         window.location.replace("/results")
+    })
+
+    io.on('highscore-info', (str)=>{
+    console.log("264" + str)
+    StartingOverlay(str);
     })
     
     colorPicker.addEventListener('input', (e) => {
@@ -238,6 +285,7 @@ align-items: center;
       if (guess == currentAnswer) {
       guessField.disabled = true
       guessForm.disabled = true
+      guessField.style.backgroundColor = "#48E532";
       io.emit('guessCorrect', guess)
       }
       
@@ -255,7 +303,8 @@ align-items: center;
         userList.innerHTML = ""
         clientArr.forEach((element) => {
             var paragraph = document.createElement("p");
-            paragraph.textContent = element.username + " -> " + element.correctAnswerCount
+            paragraph.textContent = element.username + " -> " + element.point
+            console.log("element"+element.point);
             userList.append(paragraph);
         });
     } 
@@ -269,12 +318,46 @@ align-items: center;
       ctx.beginPath();
       ctx.moveTo(lastX, lastY);
       ctx.lineTo(event.offsetX, event.offsetY);
+      if(isDrawer == true){     
+      ctx.strokeStyle = penColor;
       ctx.stroke();
-      io.emit("draw",{x,y})
+      io.emit("draw",{x,y,penColor})
+      }
+      else{
+      ctx.strokeStyle = event.penColor;
+      ctx.stroke();
+      io.emit("draw",{x,y,penColor})
+      }
+      
 
       lastX = event.offsetX
       lastY = event.offsetY
-}
+    }
+
+    function OverlayControl(text,color){
+      document.getElementById("overlayDiv").style.display = "block";
+      document.getElementById("overlayDiv").style.color = color;
+      document.getElementById("overlayH1").innerHTML = text;
+      setTimeout( () => {
+        document.getElementById("overlayDiv").style.display = "none";
+        document.getElementById("overlayDiv").style.zIndex = 0;
+        console.log(document.getElementById("overlayDiv").style.zIndex)
+        
+      }, 3000);
+    }
+
+    function StartingOverlay(str){ 
+      document.getElementById("overlayDiv").style.display = "block";
+      document.getElementById("overlayDiv").style.color = "#32E5D5";
+      document.getElementById("overlayH1").innerHTML = "Hoşgeldiniz";
+      console.log(document.getElementById("overlayH3"));
+      document.getElementById("overlayH3").innerHTML = str;
+
+      setTimeout( () => {
+        document.getElementById("overlayDiv").style.display = "none";
+        document.getElementById("overlayDiv").style.zIndex = 0;
+      }, 3000);
+    }
 
 
 
