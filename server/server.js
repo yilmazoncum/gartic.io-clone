@@ -82,7 +82,7 @@ io.on('connect', (socket) => {
 
     //start the round and keep track of remaining time
     socket.on('start-round', () => {
-        var currentDrawer = setDrawer();
+        var currentDrawer = getDrawer();
         if(currentDrawer != -1){
             io.emit('round-begun')
             time = 30;
@@ -94,17 +94,23 @@ io.on('connect', (socket) => {
                     clearInterval(roundTime);
                     correctAnswerCount = 0
                     io.emit('round-end',"time")
+                    setDrawer();
                     //overlayda yazdırmak amacıyla hangi nedenle oyunun bittiğini parametre olarak gönderdik
                 }
                 else if (IsAllAnswersCorrect(correctAnswerCount)) {
                     clearInterval(roundTime);
                     correctAnswerCount = 0
                     io.emit('round-end',"correct")
+                    setDrawer();
                     //overlayda yazdırmak amacıyla hangi nedenle oyunun bittiğini parametre olarak gönderdik
                 }
             },1000);
     }
     });
+
+    socket.on('prepare-next-drawer', () => {
+    io.to(drawerID).emit('prepare-drawer');
+    })
 
     socket.on('disconnect', async () => {
         connections = connections.filter((cn) => cn.id !== socket.id);
@@ -133,7 +139,8 @@ io.on('connect', (socket) => {
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
         getQuestionsFromDb(connectionsLimit) //! kullanıcı sayısı kadar soru alıyo oyun mantığı değişebilir
-        
+        setDrawer();
+        io.to(drawerID).emit('prepare-drawer');
         io.emit('game-begun');
         
     })
@@ -154,7 +161,7 @@ io.on('connect', (socket) => {
     })
 })
 
-function setDrawer(){
+function getDrawer(){
     console.log(round, connectionsLimit);
     console.log("146: " + questions)
     if(round >= connectionsLimit){
@@ -164,17 +171,22 @@ function setDrawer(){
         return -1;
     }
   
-    drawerID = clientIdArr[round]['id'];
-    currentDrawer = clientIdArr[round];
+    setDrawer();
     io.to(drawerID).emit('drawer');
 
     
     currentQuestion = questions[round]
 
-    io.to(drawerID).emit('showQuestion',currentQuestion)
+    io.to(drawerID).emit('showQuestion',currentQuestion);
+    io.to(drawerID).emit('prepare-drawer');
     io.emit('setQuestion',currentQuestion);
     round += 1;
     return drawerID;
+}
+
+function setDrawer(){
+    drawerID = clientIdArr[round]['id'];
+    currentDrawer = clientIdArr[round];
 }
 
 function getWinner(){

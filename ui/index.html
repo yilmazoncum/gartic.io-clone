@@ -223,9 +223,14 @@
 
     io.on('game-begun',() => {
       startBtn.style.display = "none";
-      startRoundBtn.style.display = "block";
+      
       OverlayControl("Oda Hazır Oyun Başlayacak !","#327DE5");      
       
+    })
+
+    io.on('prepare-drawer',() => {
+      startRoundBtn.style.display = "block";
+      OverlayControl("Sıra Sende !","#E55132")
     })
 
     io.on('setQuestion',(q) => {
@@ -235,6 +240,7 @@
     io.on('round-end', (reason) =>{
       
       startRoundBtn.disabled = false;
+      startRoundBtn.style.display = "none";
       guessField.disabled = false
       guessForm.disabled = false
       remainingTime.textContent = 0;
@@ -253,6 +259,7 @@
       }
       guessField.style.backgroundColor = "white";
 
+      io.emit('prepare-next-drawer');
     })
 
     io.on('game-end', (results) =>{
