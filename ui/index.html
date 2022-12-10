@@ -7,6 +7,9 @@
     <title>WhiteBoard</title>
   </head>
   <style>
+    body{
+      background-color: antiquewhite;
+    }
     .main-div{
       display: flex;
       z-index:5;
@@ -17,7 +20,7 @@
     }
     #bottom-canvas {
       display: grid;
-      grid-template-columns: 110px 150px 110px;
+      grid-template-columns: 110px 150px 220px;
       grid-template-rows: 40px;
       grid-column-gap: 10px;
       grid-row-gap: 0px;
@@ -32,6 +35,23 @@
         display: flex;
         align-items: center;
         z-index:5;
+        font-size: x-large;
+    }
+    #round-time-container {   
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        z-index:5;
+        font-size: x-large;
+    }
+    #user-list-div{
+      border: outset rgb(94, 82, 68);
+      margin-bottom: 0.3em;
+    }
+    #my-canvas{
+      border: outset rgb(94, 82, 68);
+      margin-right: 0.5em;
+      margin-bottom: 0.3em;
     }
     #overlayDiv {
     z-index:99;
@@ -311,6 +331,14 @@
         clientArr.forEach((element) => {
             var paragraph = document.createElement("p");
             paragraph.textContent = element.username + " -> " + element.point
+            paragraph.style.borderStyle = "outset";
+            paragraph.style.borderColor = "#573b39";
+            paragraph.style.fontSize = "x-large";
+            paragraph.style.marginTop = "0em";
+            paragraph.style.marginBottom = "0.2em";
+            paragraph.style.padding = "0.1em 1em";
+            paragraph.style.width = "auto";
+            paragraph.style.alignContent = "center";
             console.log("element"+element.point);
             userList.append(paragraph);
         });
