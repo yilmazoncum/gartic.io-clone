@@ -109,7 +109,7 @@ io.on('connect', (socket) => {
     });
 
     socket.on('prepare-next-drawer', () => {
-    io.to(drawerID).emit('prepare-drawer');
+        io.to(drawerID).emit('prepare-drawer');
     })
 
     socket.on('disconnect', async () => {
@@ -138,6 +138,9 @@ io.on('connect', (socket) => {
     socket.on('startGame', () =>{
         //trigger anındaki oyuncu sayısını limit belirler
         connectionsLimit = io.engine.clientsCount
+        round = 0;
+        questions = []
+        setDrawer();
         getQuestionsFromDb(connectionsLimit) //! kullanıcı sayısı kadar soru alıyo oyun mantığı değişebilir
         setDrawer();
         io.to(drawerID).emit('prepare-drawer');
@@ -164,12 +167,6 @@ io.on('connect', (socket) => {
 function getDrawer(){
     console.log(round, connectionsLimit);
     console.log("146: " + questions)
-    if(round >= connectionsLimit){
-        // TODO: start butonuna basınca oyun bitiyo, düzeltilmeli
-        
-        io.emit('game-end', getWinner())
-        return -1;
-    }
   
     setDrawer();
     io.to(drawerID).emit('drawer');
@@ -185,6 +182,13 @@ function getDrawer(){
 }
 
 function setDrawer(){
+    if(round >= connectionsLimit){
+        // TODO: start butonuna basınca oyun bitiyo, düzeltilmeli
+        connectionsLimit = 100;
+        io.emit('game-end', getWinner())
+        return -1;
+    }
+
     drawerID = clientIdArr[round]['id'];
     currentDrawer = clientIdArr[round];
 }
