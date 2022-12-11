@@ -149,16 +149,6 @@
     let lastY = 0;
     let hue = 0;
     let lineWidth = 50;
-    // ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
-
-    // canvas.addEventListener('mousedown',(e) => {
-    //     if(drawer){
-    //       lineActive = !lineActive
-    //       ctx.moveTo(x, y)
-    //       ctx.beginPath();
-    //       io.emit('down',{x,y})
-    //     }
-    // })
 
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mousedown", (event) => {

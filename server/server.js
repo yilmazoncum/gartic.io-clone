@@ -63,15 +63,6 @@ io.on('connect', (socket) => {
             //diğerleri non-leader room'a
             socket.join("non-leader")
         }
-        if (io.engine.clientsCount == 1 ) {
-            //ilk bağlanan kişi leader room'a
-            socket.join("leader")
-            io.emit('leaderChange')
-        }
-        else {
-            //diğerleri non-leader room'a
-            socket.join("non-leader")
-        }
         socket.username = username;
         console.log(`${socket.username} has connected`);
         clientIdArr.push({"id":socket.id,"username":socket.username,"correctAnswerCount":0,"point":0})
